@@ -63,6 +63,13 @@ parse_conf_file() {
     MENDER_ROOTFS_PART_A="$(echo $MENDER_ROOTFS_PART_A | sed -e 's,^ubi,/dev/ubi,')"
     MENDER_ROOTFS_PART_B="$(echo $MENDER_ROOTFS_PART_B | sed -e 's,^ubi,/dev/ubi,')"
 
+    # Translate any PARTUUID device path (e.g. /dev/disk/by-partuuid/b3c4f349-1180-45e1-9a3d-0a6697f4960e)
+    # to the regular device path (e.g. /dev/sda2).
+    # This is a no-op if the device path is already a regular one.
+    MENDER_ROOTFS_PART_A="$(readlink -f $MENDER_ROOTFS_PART_A)"
+    MENDER_ROOTFS_PART_B="$(readlink -f $MENDER_ROOTFS_PART_B)"
+
+    # Extract the partition number from the regular device path (e.g. /dev/sda2 --> 2).
     MENDER_ROOTFS_PART_A_NUMBER="$(echo "$MENDER_ROOTFS_PART_A" | grep -Eo '[0-9]+$' || true)"
     MENDER_ROOTFS_PART_B_NUMBER="$(echo "$MENDER_ROOTFS_PART_B" | grep -Eo '[0-9]+$' || true)"
 
