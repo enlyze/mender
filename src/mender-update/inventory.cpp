@@ -80,19 +80,19 @@ error::Error PushInventoryData(
 	size_t &last_data_hash,
 	APIResponseHandler api_handler) {
 	
-	log::Debug("[CF] Calling GetInventoryData");
+	log::Info("[CF] Calling GetInventoryData");
 	auto ex_inv_data = inv_parser::GetInventoryData(inventory_generators_dir);
 	if (!ex_inv_data) {
-		log::Debug("[CF] Got no ex_inv_data");
+		log::Info("[CF] Got no ex_inv_data");
 		return ex_inv_data.error();
 	}
 	auto &inv_data = ex_inv_data.value();
 
 	if (inv_data.count("mender_client_version") != 0) {
-		log::Debug("[CF] count(mender_client_version) != 0");
+		log::Info("[CF] count(mender_client_version) != 0");
 		inv_data["mender_client_version"].push_back(conf::kMenderVersion);
 	} else {
-		log::Debug("[CF] count(mender_client_version) == 0");
+		log::Info("[CF] count(mender_client_version) == 0");
 		inv_data["mender_client_version"] = {conf::kMenderVersion};
 	}
 
@@ -126,16 +126,16 @@ error::Error PushInventoryData(
 	}
 	payload.push_back(']');
 
-	log::Debug("[CF] Generated payload: " + payload);
+	log::Info("[CF] Generated payload: " + payload);
 
 	size_t payload_hash = std::hash<string> {}(payload);
 	if (payload_hash == last_data_hash) {
-		log::Debug("[CF] payload_hash == last_data_hash, returning with NoError");
+		log::Info("[CF] payload_hash == last_data_hash, returning with NoError");
 		loop.Post([api_handler]() { api_handler(error::NoError); });
 		return error::NoError;
 	}
 
-	log::Debug("[CF] About to submit payload");
+	log::Info("[CF] About to submit payload");
 
 	http::BodyGenerator payload_gen = [payload]() {
 		return make_shared<io::StringReader>(payload);
@@ -149,7 +149,7 @@ error::Error PushInventoryData(
 	req->SetHeader("Accept", "application/json");
 	req->SetBodyGenerator(payload_gen);
 
-	log::Debug("[CF] AsyncCall");
+	log::Info("[CF] AsyncCall");
 
 	auto received_body = make_shared<vector<uint8_t>>();
 	return client.AsyncCall(
