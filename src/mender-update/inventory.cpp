@@ -122,10 +122,6 @@ error::Error PushInventoryData(
 	payload.push_back(']');
 
 	size_t payload_hash = std::hash<string> {}(payload);
-	if (payload_hash == last_data_hash) {
-		loop.Post([api_handler]() { api_handler(error::NoError); });
-		return error::NoError;
-	}
 
 	http::BodyGenerator payload_gen = [payload]() {
 		return make_shared<io::StringReader>(payload);
